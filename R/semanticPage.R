@@ -6,7 +6,7 @@ SUPPORTED_THEMES <- c("cerulean", "darkly", "paper", "simplex",
                       "cyborg", "sandstone", "yeti", "lumen", "spacelab")
 
 #' Cloudfront path
-CDN_PATH <- ""
+CDN_PATH <- "https://regn.utiligize.com/public/"
 
 #' Add dashboard dependencies to html
 #'
@@ -14,13 +14,13 @@ CDN_PATH <- ""
 #'
 #' @return Content with appended dependencies.
 get_dependencies <- function() {
-  if (getOption("shiny.minified", TRUE)) {
+  # if (getOption("shiny.minified", TRUE)) {
     javascript_file <- "semantic.min.js"
     css_files <- c("semantic.min.css")
-  } else {
-    javascript_file <- "semantic.js"
-    css_files <- c("semantic.css")
-  }
+  # } else {
+    # javascript_file <- "semantic.js"
+    # css_files <- c("semantic.css")
+  # }
 
   shiny::tagList(
     htmltools::htmlDependency("static-style",
