@@ -104,8 +104,8 @@ semanticPage <- function(..., title = "", theme = NULL){ # nolint
     ifelse(getOption("semantic.themes", FALSE), get_dependencies(), ""),
     get_range_component_dependencies(),
     shiny::tags$head(
-      shiny::tags$link(rel = "stylesheet", href = check_semantic_theme(theme)),
-      tags$script(src = get_default_semantic_js()),
+      shiny::tags$link(rel = "stylesheet", href = "semantic.min.css"),
+      tags$script(src = "semantic.min.js"),
       shiny::tags$title(title),
       shiny::tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
     ),
