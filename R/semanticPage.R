@@ -6,7 +6,7 @@ SUPPORTED_THEMES <- c("cerulean", "darkly", "paper", "simplex",
                       "cyborg", "sandstone", "yeti", "lumen", "spacelab")
 
 #' Cloudfront path
-CDN_PATH <- "https://d335w9rbwpvuxm.cloudfront.net"
+CDN_PATH <- ""
 
 #' Add dashboard dependencies to html
 #'
@@ -23,9 +23,9 @@ get_dependencies <- function() {
   }
 
   shiny::tagList(
-    htmltools::htmlDependency("semantic-ui",
+    htmltools::htmlDependency("static-style",
                               "2.2.3",
-                              c(href = CDN_PATH),
+                              c(file = system.file("static-style", package = "shiny.semantic")),
                               script = javascript_file,
                               stylesheet = css_files
     )
