@@ -42,7 +42,7 @@ uilabel <- function(..., type = "", is_link = TRUE) {
 #' segment")
 #'
 #' @export
-tabset_emil <- function (tabs, id = generate_random_id("menu"), menu_class = "top attached tabular", 
+tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top attached tabular", 
                          tab_content_class = "bottom attached segment") 
 {
   identifiers <- replicate(length(tabs), list(id = generate_random_id("tab")), 
@@ -124,42 +124,6 @@ tabset_emil <- function (tabs, id = generate_random_id("menu"), menu_class = "to
                                                    menu_class), tabs_list), content_list, shiny::tags$script(script_code),
                  tags$script(paste0("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'
 });")))
-}
-tabset <- function(tabs,
-                   id = generate_random_id("menu"),
-                   menu_class = "top attached tabular",
-                   tab_content_class = "bottom attached segment") {
-  identifiers <- replicate(length(tabs),
-                           list(id = generate_random_id("tab")),
-                           simplify = FALSE)
-  id_tabs <- purrr::map2(identifiers, tabs, ~ c(.x, .y))
-  script_code <- paste0(
-    " // Code below is needed to trigger visibility on reactive Shiny outputs.
-      // Thanks to that users do not have to set suspendWhenHidden to FALSE.
-      var previous_tab;
-      $('#", id, ".menu .item').tab({
-      onVisible: function(target) {
-      if (previous_tab) {
-      $(this).trigger('hidden');
-      }
-      $(window).resize();
-      $(this).trigger('shown');
-      previous_tab = this;}});")
-  shiny::tagList(
-    shiny::div(id = id,
-               class = paste("ui menu", menu_class),
-               purrr::map(id_tabs, ~ {
-                 class <- paste("item", if (.$id == id_tabs[[1]]$id) "active" else "")
-                 shiny::a(class = class, `data-tab` = .$id, .$menu)
-               })
-    ),
-    purrr::map(id_tabs, ~ {
-      class <- paste("ui tab", tab_content_class,
-                     if (.$id == id_tabs[[1]]$id) "active" else "")
-      shiny::div(class = class, `data-tab` = .$id, .$content)
-    }),
-    shiny::tags$script(script_code)
-  )
 }
 
 generate_random_id <- function(prefix, id_length = 20) {
