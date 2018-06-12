@@ -42,6 +42,88 @@ uilabel <- function(..., type = "", is_link = TRUE) {
 #' segment")
 #'
 #' @export
+tabset_emil <- function (tabs, id = generate_random_id("menu"), menu_class = "top attached tabular", 
+                         tab_content_class = "bottom attached segment") 
+{
+  identifiers <- replicate(length(tabs), list(id = generate_random_id("tab")), 
+                           simplify = FALSE)
+  
+  id_tabs <- purrr::map2(identifiers, tabs, ~c(.x, .y))
+  
+  script_code <- paste0(" // Code below is needed to trigger visibility on reactive Shiny outputs.\n      // Thanks to that users do not have to set suspendWhenHidden to FALSE.\n      var previous_tab;\n      $('#", 
+                        id, ".menu .item').tab({\n      onVisible: function(target) {\n      if (previous_tab) {\n      $(this).trigger('hidden');\n      }\n      $(window).resize();\n      $(this).trigger('shown');\n      previous_tab = this;}});")
+  
+  # Tab list section --------------------------------------------------------
+  
+  tabs_list <- purrr::map(id_tabs, ~{
+    class <- paste("item", if (.$id == id_tabs[[1]]$id)
+      "active"
+      else "")
+    # class <- 'item'
+    shiny::a(class = class, `data-tab` = .$id, .$menu)
+  })
+  
+  dropdown_tabs_list <- purrr::map(id_tabs, ~{
+    uiicon("dropdown")
+    class <- "ui dropdown item"
+    shiny::a(class = class, `data-tab` = .$id, .$menu)
+  })
+  
+  
+  # Content list section ----------------------------------------------------
+  
+  content_list <- purrr::map(id_tabs, ~{
+    class <- paste("ui tab", tab_content_class, if (.$id ==
+                                                    id_tabs[[1]]$id)
+      "active"
+      else "")
+    # class <- paste("ui tab", tab_content_class)
+    shiny::div(class = class, `data-tab` = .$id, .$content)
+  })
+  
+  for (l in 1:length(tabs)){
+    if (length(tabs[[l]]$class) > 0){
+      if (tabs[[l]]$class == 'right menu'){
+        tabs_list[[l]] <- shiny::div(id = id, class = "right menu", tabs_list[[l]])
+        
+      } else if (tabs[[l]]$class == 'dropdown item'){
+        sub_identifiers <- replicate(length(tabs[[l]]$submenu), list(id = generate_random_id("tab")), 
+                                     simplify = FALSE)
+        
+        dropdown_id <- tabs[[l]]$id
+        
+        sub_id_tabs <- purrr::map2(sub_identifiers, tabs[[l]]$submenu, ~c(.x, .y))
+        
+        content_list_submenu <- purrr::map(sub_id_tabs, ~{
+          class <- paste("ui tab", tab_content_class)
+          shiny::div(class = class, `data-tab` = .$id, .$content)
+        })
+        
+        content_list[[l]] <- content_list_submenu
+        
+        sub_menu <- div(
+          class = "ui pointing dropdown link item",
+          span('Din indberetning',class="text"),
+          uiicon("dropdown"),
+          uimenu(
+            # menu_header("Header"),
+            # menu_divider(),
+            purrr::map(sub_id_tabs, ~{
+              class <- "item"
+              shiny::a(class = class, `data-tab` = .$id, .$menu)
+            })
+          ))
+        
+        tabs_list[[l]] <- sub_menu
+      }
+    }
+  }
+  
+  
+  shiny::tagList(shiny::div(id = id, class = paste("ui menu", 
+                                                   menu_class), tabs_list), content_list, shiny::tags$script(script_code),
+                 tags$script(paste0("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'
+});")))
 tabset <- function(tabs,
                    id = generate_random_id("menu"),
                    menu_class = "top attached tabular",
