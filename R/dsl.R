@@ -124,6 +124,7 @@ tabset_emil <- function (tabs, id = generate_random_id("menu"), menu_class = "to
                                                    menu_class), tabs_list), content_list, shiny::tags$script(script_code),
                  tags$script(paste0("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'
 });")))
+}
 tabset <- function(tabs,
                    id = generate_random_id("menu"),
                    menu_class = "top attached tabular",
