@@ -125,7 +125,15 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
                                                    menu_class), tabs_list), content_list, shiny::tags$script(script_code),
                  tags$script(paste0("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'
 });")),
-                 tags$script("$('.ui .item').tab();"))
+                 tags$script("$('.ui .item').tab();"),
+                 tags$script("
+                   $(document).ready(function(){
+                     $(document).on('click','.dropdown .item',function(e){
+                       $('.ui .item').removeClass('active');
+                       $(this).addClass('active');
+                     });
+                   });")
+                 )
 }
 
 generate_random_id <- function(prefix, id_length = 20) {
