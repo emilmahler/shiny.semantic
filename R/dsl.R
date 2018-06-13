@@ -86,6 +86,8 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
       if (tabs[[l]]$class == 'right menu'){
         tabs_list[[l]] <- shiny::div(id = id, class = "right menu", tabs_list[[l]])
         
+        # window.top.location.href = 'https://regn.utiligize.com/logout';
+        
       } else if (tabs[[l]]$class == 'dropdown item'){
         sub_identifiers <- replicate(length(tabs[[l]]$submenu), list(id = generate_random_id("tab")), 
                                      simplify = FALSE)
@@ -119,11 +121,11 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
     }
   }
   
-  
   shiny::tagList(shiny::div(id = id, class = paste("ui menu", 
                                                    menu_class), tabs_list), content_list, shiny::tags$script(script_code),
                  tags$script(paste0("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'
-});")))
+});")),
+                 tags$script("$('.ui .item').tab();"))
 }
 
 generate_random_id <- function(prefix, id_length = 20) {
