@@ -84,7 +84,10 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
   for (l in 1:length(tabs)){
     if (length(tabs[[l]]$class) > 0){
       if (tabs[[l]]$class == 'right menu'){
-        tabs_list[[l]] <- shiny::div(id = id, class = "right menu", tabs_list[[l]])
+        tabs_list[[l]] <- shiny::div(id = id, class = "right menu",
+                                     shiny::a(class = "item",
+                                     onclick = "window.top.location.href = 'https://regn.utiligize.com/logout';",
+                                     id_tabs[[l]]$menu))
         
         # window.top.location.href = 'https://regn.utiligize.com/logout';
         
@@ -105,7 +108,8 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
         
         sub_menu <- div(
           class = "ui pointing dropdown link item",
-          span('Din indberetning',class="text"),
+          # div(tabs[[l]]$`menu`,id='dropdown_1'),
+          span(tabs[[l]]$`menu`,class='text'),
           uiicon("dropdown"),
           uimenu(
             # menu_header("Header"),
@@ -133,8 +137,16 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
                        $(this).addClass('active');
                      });
                    });")
+                 # tags$script("
+                 #   $(document).ready(function(){
+                 #     $(document).on('click','.right .menu .item',function(e){
+                 #       $('.ui .item').removeClass('active');
+                 #       $(this).addClass('active');
+                 #     });
+                 #   });")
                  )
 }
+# window.top.location.href
 
 generate_random_id <- function(prefix, id_length = 20) {
   random_id <- paste(sample(letters, id_length, replace = TRUE), collapse = "")
