@@ -26,7 +26,7 @@ uiicon <- function(type = "", ...) {
 uilabel <- function(..., type = "", is_link = TRUE) {
   label_tag <- if (is_link) tags$a else tags$div
   label_tag(class = paste("ui label", type),
-      list(...))
+            list(...))
 }
 
 #' Create Semantic UI tabs
@@ -43,7 +43,7 @@ uilabel <- function(..., type = "", is_link = TRUE) {
 #'
 #' @export
 tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top attached tabular", 
-                         tab_content_class = "bottom attached segment") 
+                    tab_content_class = "bottom attached segment") 
 {
   identifiers <- replicate(length(tabs), list(id = generate_random_id("tab")), 
                            simplify = FALSE)
@@ -86,8 +86,8 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
       if (tabs[[l]]$class == 'right menu'){
         tabs_list[[l]] <- shiny::div(id = id, class = "right menu",
                                      shiny::a(class = "item",
-                                     onclick = "window.top.location.href = 'https://regn.utiligize.com/logout';",
-                                     id_tabs[[l]]$menu))
+                                              onclick = "window.top.location.href = 'https://regn.utiligize.com/logout';",
+                                              id_tabs[[l]]$menu))
         
         # window.top.location.href = 'https://regn.utiligize.com/logout';
         
@@ -127,24 +127,15 @@ tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top att
   
   shiny::tagList(shiny::div(id = id, class = paste("ui menu", 
                                                    menu_class), tabs_list), content_list, shiny::tags$script(script_code),
-                 tags$script(paste0("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'
-});")),
-                 tags$script("$('.ui .item').tab();"),
-                 tags$script("
-                   $(document).ready(function(){
+                 shiny::tags$script("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'});"),
+                 shiny::tags$script("$('.ui.item').tab();"),
+                 shiny::tags$script("$(document).ready(function(){
                      $(document).on('click','.dropdown .item',function(e){
                        $('.ui .item').removeClass('active');
                        $(this).addClass('active');
                      });
                    });")
-                 # tags$script("
-                 #   $(document).ready(function(){
-                 #     $(document).on('click','.right .menu .item',function(e){
-                 #       $('.ui .item').removeClass('active');
-                 #       $(this).addClass('active');
-                 #     });
-                 #   });")
-                 )
+  )
 }
 # window.top.location.href
 
@@ -356,7 +347,7 @@ dropdown <- function(name,
                      value = NULL) {
   unique_dropdown_class <- paste0("dropdown_name_", name)
   class <- paste("ui selection fluid dropdown", unique_dropdown_class)
-
+  
   shiny::tagList(
     shiny::div(class = class,
                shiny_text_input(name,
@@ -366,9 +357,9 @@ dropdown <- function(name,
                uiicon("dropdown"),
                shiny::div(class = "default text", default_text),
                uimenu(
-                          purrr::map2(choices, choices_value, ~
-                                        menu_item(`data-value` = .y, .x)
-                          )
+                 purrr::map2(choices, choices_value, ~
+                               menu_item(`data-value` = .y, .x)
+                 )
                )
     ),
     shiny::tags$script(paste0(
@@ -480,21 +471,21 @@ menu_item <- function(..., item_feature = "", style = NULL, href = NULL) {
 #' @import shiny
 #' @export
 uidropdown <- function(..., type = "", name, is_menu_item = FALSE, dropdown_specs = list()) {
-
+  
   if (missing(name)) {
     stop("Dropdown requires unique name. Specify \"name\" argument.")
   }
-
+  
   unique_dropdown_class <- paste0("dropdown_name_", name)
-
+  
   if (is_menu_item) {
     class <- paste("ui dropdown item", type, unique_dropdown_class)
   } else {
     class <- paste("ui dropdown", type, unique_dropdown_class)
   }
-
+  
   dropdown_functionality <- paste(dropdown_specs, collapse = ", ")
-
+  
   shiny::tagList(
     shiny::div(class = class,
                list(...)
@@ -550,7 +541,7 @@ list_element <- function(data, is_description, icon, row) {
       } else {
         div(class = "content", data$header[row])
       }
-      )
+  )
 }
 
 #' Create Semantic UI list with header, description and icons
@@ -579,10 +570,10 @@ list_element <- function(data, is_description, icon, row) {
 uilist <- function(data, icon, is_divided = FALSE, is_description = FALSE){
   divided_list <- ifelse(is_divided, "divided", "")
   list_class <- paste("ui", divided_list, "list")
-
+  
   div(class = list_class,
       1:nrow(data) %>% purrr::map(function(row){
         list_element(data, is_description, icon, row)
-        })
+      })
   )
 }
