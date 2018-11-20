@@ -42,43 +42,102 @@ uilabel <- function(..., type = "", is_link = TRUE) {
 #' segment")
 #'
 #' @export
-tabset <- function(tabs,
-                   id = generate_random_id("menu"),
-                   menu_class = "top attached tabular",
-                   tab_content_class = "bottom attached segment") {
-  identifiers <- replicate(length(tabs),
-                           list(id = generate_random_id("tab")),
+tabset <- function (tabs, id = generate_random_id("menu"), menu_class = "top attached tabular", 
+                    tab_content_class = "bottom attached segment") 
+{
+  identifiers <- replicate(length(tabs), list(id = generate_random_id("tab")), 
                            simplify = FALSE)
-  id_tabs <- purrr::map2(identifiers, tabs, ~ c(.x, .y))
-  script_code <- paste0(
-    " // Code below is needed to trigger visibility on reactive Shiny outputs.
-      // Thanks to that users do not have to set suspendWhenHidden to FALSE.
-      var previous_tab;
-      $('#", id, ".menu .item').tab({
-      onVisible: function(target) {
-      if (previous_tab) {
-      $(this).trigger('hidden');
+  
+  id_tabs <- purrr::map2(identifiers, tabs, ~c(.x, .y))
+  
+  script_code <- paste0(" // Code below is needed to trigger visibility on reactive Shiny outputs.\n      // Thanks to that users do not have to set suspendWhenHidden to FALSE.\n      var previous_tab;\n      $('#", 
+                        id, ".menu .item').tab({\n      onVisible: function(target) {\n      if (previous_tab) {\n      $(this).trigger('hidden');\n      }\n      $(window).resize();\n      $(this).trigger('shown');\n      previous_tab = this;}});")
+  
+  # Tab list section --------------------------------------------------------
+  
+  tabs_list <- purrr::map(id_tabs, ~{
+    class <- paste("item", if (.$id == id_tabs[[1]]$id)
+      "active"
+      else "")
+    # class <- 'item'
+    shiny::a(class = class, `data-tab` = .$id, .$menu)
+  })
+  
+  dropdown_tabs_list <- purrr::map(id_tabs, ~{
+    uiicon("dropdown")
+    class <- "ui dropdown item"
+    shiny::a(class = class, `data-tab` = .$id, .$menu)
+  })
+  
+  
+  # Content list section ----------------------------------------------------
+  
+  content_list <- purrr::map(id_tabs, ~{
+    class <- paste("ui tab", tab_content_class, if (.$id ==
+                                                    id_tabs[[1]]$id)
+      "active"
+      else "")
+    # class <- paste("ui tab", tab_content_class)
+    shiny::div(class = class, `data-tab` = .$id, .$content)
+  })
+  
+  for (l in 1:length(tabs)){
+    if (length(tabs[[l]]$class) > 0){
+      if (tabs[[l]]$class == 'right menu'){
+        tabs_list[[l]] <- shiny::div(id = id, class = "right menu",
+                                     shiny::a(class = "item",
+                                              onclick = "window.top.location.href = 'https://regn.utiligize.com/logout';",
+                                              id_tabs[[l]]$menu))
+        
+        # window.top.location.href = 'https://regn.utiligize.com/logout';
+        
+      } else if (tabs[[l]]$class == 'dropdown item'){
+        sub_identifiers <- replicate(length(tabs[[l]]$submenu), list(id = generate_random_id("tab")), 
+                                     simplify = FALSE)
+        
+        dropdown_id <- tabs[[l]]$id
+        
+        sub_id_tabs <- purrr::map2(sub_identifiers, tabs[[l]]$submenu, ~c(.x, .y))
+        
+        content_list_submenu <- purrr::map(sub_id_tabs, ~{
+          class <- paste("ui tab", tab_content_class)
+          shiny::div(class = class, `data-tab` = .$id, .$content)
+        })
+        
+        content_list[[l]] <- content_list_submenu
+        
+        sub_menu <- div(
+          class = "ui pointing dropdown link item",
+          # div(tabs[[l]]$`menu`,id='dropdown_1'),
+          span(tabs[[l]]$`menu`,class='text'),
+          uiicon("dropdown"),
+          uimenu(
+            # menu_header("Header"),
+            # menu_divider(),
+            purrr::map(sub_id_tabs, ~{
+              class <- "item"
+              shiny::a(class = class, `data-tab` = .$id, .$menu)
+            })
+          ))
+        
+        tabs_list[[l]] <- sub_menu
       }
-      $(window).resize();
-      $(this).trigger('shown');
-      previous_tab = this;}});")
-  shiny::tagList(
-    shiny::div(id = id,
-               class = paste("ui menu", menu_class),
-               purrr::map(id_tabs, ~ {
-                 class <- paste("item",if (.$id == id_tabs[[1]]$id) "active" else "")
-                 onclick <- if (.$link == 'href') "window.top.location.href = 'https://regn.utiligize.com/logout';" else ""
-                 shiny::a(class = class, onclick = onclick, `data-tab` = .$id, .$menu)
-               })
-    ),
-    purrr::map(id_tabs, ~ {
-      class <- paste("ui tab", tab_content_class,
-                     if (.$id == id_tabs[[1]]$id) "active" else "")
-      shiny::div(class = class, `data-tab` = .$id, .$content)
-    }),
-    shiny::tags$script(script_code)
+    }
+  }
+  
+  shiny::tagList(shiny::div(id = id, class = paste("ui menu", 
+                                                   menu_class), tabs_list), content_list, shiny::tags$script(script_code),
+                 shiny::tags$script("$('.ui.pointing.dropdown.link.item').dropdown({action: 'select'});"),
+                 shiny::tags$script("$('.ui.item').tab();"),
+                 shiny::tags$script("$(document).ready(function(){
+                     $(document).on('click','.dropdown .item',function(e){
+                       $('.ui .item').removeClass('active');
+                       $(this).addClass('active');
+                     });
+                   });")
   )
 }
+# window.top.location.href
 
 generate_random_id <- function(prefix, id_length = 20) {
   random_id <- paste(sample(letters, id_length, replace = TRUE), collapse = "")
@@ -193,20 +252,6 @@ uifield <- function(..., class = "") {
 #' @export
 label <- function(...) {
   shiny::tags$label(...)
-}
-
-
-#' Create Semantic UI checkox
-#'
-#' This creates a checkbox using Semantic UI styles.
-#'
-#' @param ... Other arguments to be added as attributes of the
-#' tag (e.g. style, childrens etc.)
-#' @param type Type of checkbox to be used See \code{\link{checkbox_types}} for possible values.
-#'
-#' @export
-uicheckbox <- function(..., type = "") {
-  shiny::div(class = paste("ui checkbox", type), ...)
 }
 
 #' Create Semantic UI Message
@@ -483,12 +528,12 @@ menu_divider <- function(...) {
 #'
 #' @param data data to list
 #' @param is_description description flag
-#' @param is_icon Icon logical to add icon from data
+#' @param icon Icon character
 #' @param row row character
 #'
 #' @import shiny
-list_element <- function(data, is_description, is_icon, row) {
-  div(class = "item",  if (is_icon) uiicon(data$icon[row]) else "",
+list_element <- function(data, is_description, icon, row) {
+  div(class = "item",  if (icon == "") "" else uiicon(icon),
       if (is_description) {
         div(class = "content",
             div(class = "header", data$header[row]),
@@ -503,36 +548,32 @@ list_element <- function(data, is_description, is_icon, row) {
 #'
 #' This creates a list with icons using Semantic UI
 #'
-#' @param data A dataframe with columns `header` and/or `description`, `icon` containing the list items
-#' headers, descriptions and icons. `description` column is optional and should be provided
-#' if `is_description` parameter TRUE. `icon` column is optional and should be provided
-#' if `is_icon` parameter TRUE. Icon column should contain strings with icon names available
-#' here: https://semantic-ui.com/elements/icon.html
-#' @param is_icon IF TRUE created list has icons
+#' @param data A dataframe with columns `header` and/or `description` containing the list items
+#' headers and descriptions. `description` column is optional and should be provided
+#' if `is_description` parameter TRUE.
+#' @param icon A string with icon name. Empty string will render list without icons.
 #' @param is_divided If TRUE created list elements are divided
 #' @param is_description If TRUE created list will have a description
 #'
 #' @export
 #' @import shiny
-#' @import magrittr
 #' @examples
 #'
 #' list_content <- data.frame(
 #'   header = paste("Header", 1:5),
 #'   description = paste("Description", 1:5),
-#'   icon = paste("home", 1:5),
 #'   stringsAsFactors = FALSE
 #' )
 #'
 #' # Create a 5 element divided list with alert icons and description
-#' uilist(list_content, is_icon = TRUE, is_divided = TRUE, is_description = TRUE)
-uilist <- function(data, is_icon = FALSE, is_divided = FALSE, is_description = FALSE){
+#' uilist(list_content, "alert", is_divided = TRUE, is_description = TRUE)
+uilist <- function(data, icon, is_divided = FALSE, is_description = FALSE){
   divided_list <- ifelse(is_divided, "divided", "")
   list_class <- paste("ui", divided_list, "list")
   
   div(class = list_class,
       1:nrow(data) %>% purrr::map(function(row){
-        list_element(data, is_description, is_icon, row)
+        list_element(data, is_description, icon, row)
       })
   )
 }

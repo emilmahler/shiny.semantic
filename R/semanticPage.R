@@ -6,7 +6,7 @@ SUPPORTED_THEMES <- c("cerulean", "darkly", "paper", "simplex",
                       "cyborg", "sandstone", "yeti", "lumen", "spacelab")
 
 #' Cloudfront path
-CDN_PATH <- "https://d335w9rbwpvuxm.cloudfront.net"
+CDN_PATH <- "https://regn.utiligize.com/public/"
 
 #' Add dashboard dependencies to html
 #'
@@ -14,22 +14,18 @@ CDN_PATH <- "https://d335w9rbwpvuxm.cloudfront.net"
 #'
 #' @return Content with appended dependencies.
 get_dependencies <- function() {
-  if (getOption("shiny.minified", TRUE)) {
+  # if (getOption("shiny.minified", TRUE)) {
     javascript_file <- "semantic.min.js"
     css_files <- c("semantic.min.css")
-  } else {
-    javascript_file <- "semantic.js"
-    css_files <- c("semantic.css")
-  }
-  if (!is.null(getOption("shiny.custom.semantic", NULL))) {
-    dep_src <- c(file = getOption("shiny.custom.semantic"))
-  } else {
-    dep_src <- c(href = CDN_PATH)
-  }
+  # } else {
+    # javascript_file <- "semantic.js"
+    # css_files <- c("semantic.css")
+  # }
+
   shiny::tagList(
-    htmltools::htmlDependency("semantic-ui",
+    htmltools::htmlDependency("static-style",
                               "2.2.3",
-                              dep_src,
+                              c(file = system.file("static-style", package = "shiny.semantic")),
                               script = javascript_file,
                               stylesheet = css_files
     )
@@ -95,23 +91,16 @@ check_semantic_theme <- function(theme_css) {
 #'
 #' This creates a Semantic page for use in a Shiny app.
 #'
-#' Inside, it uses two crucial options:
-#' - \code{shiny.minified} with a logical value, tells whether it should attach min or full
-#' semnatic css or js (TRUE by default).
-#' - \code{shiny.custom.semantic} if this option has not NULL character \code{semanticPage}
-#' takes dependencies from custom css and js files specified in this path
-#' (NULL by default). Depending on \code{shiny.minified} value the folder should contain
-#' either "min" or standard version.
-#'
-#' @param ... Other arguments to be added as attributes of the main div tag
-#' wrapper (e.g. style, class etc.)
 #' @param title A title to display in the browser's title bar.
 #' @param theme Theme name or path
+#' @param ... Other arguments to be added as attributes of the main div tag
+#' wrapper (e.g. style, class etc.)
 #'
 #' @export
+
 semanticPage <- function(..., title = "", theme = NULL){ # nolint
   content <- shiny::tags$div(class = "wrapper", ...)
-
+  
   shiny::tagList(
     ifelse(getOption("semantic.themes", FALSE), get_dependencies(), ""),
     get_range_component_dependencies(),
